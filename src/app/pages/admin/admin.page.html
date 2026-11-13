@@ -16,11 +16,17 @@
         }
       </div>
       @if (kind() !== 'genre') {
-        <div class="admin-file-grid"><label class="file-field">{{ kind() === 'song' ? 'Archivo de la canción' : kind() === 'artist' ? 'Foto del artista' : 'Portada del álbum' }}<input #primaryFile type="file" [accept]="kind() === 'song' ? 'audio/*' : 'image/*'" (change)="selectFile($event, 'primary')"></label>
-          @if (kind() === 'song') { <label class="file-field">Portada de la canción<input #coverFile type="file" accept="image/*" (change)="selectFile($event, 'cover')"></label> }
+        <div class="admin-file-grid"><label class="file-field">{{ kind() === 'song' ? 'Archivo de la canción' : kind() === 'artist' ? 'Foto del artista' : 'Portada del álbum' }}
+          @if (photos.native && kind() !== 'song') { <ion-button type="button" fill="outline" [disabled]="busy() || pickingPhoto()" (click)="selectNativePhoto('primary')">Elegir foto del dispositivo</ion-button> }
+          @else { <input #primaryFile type="file" [accept]="kind() === 'song' ? 'audio/*' : 'image/*'" (change)="selectFile($event, 'primary')" (cancel)="status.set('No se seleccionó ningún archivo. Puedes volver a intentarlo.')"> }
+        </label>
+          @if (kind() === 'song') { <label class="file-field">Portada de la canción
+            @if (photos.native) { <ion-button type="button" fill="outline" [disabled]="busy() || pickingPhoto()" (click)="selectNativePhoto('cover')">Elegir foto del dispositivo</ion-button> }
+            @else { <input #coverFile type="file" accept="image/*" (change)="selectFile($event, 'cover')" (cancel)="status.set('No se seleccionó ninguna foto. Puedes volver a intentarlo.')"> }
+          </label> }
         </div>
       }
-      <div class="form-actions"><ion-button class="primary" type="submit" [disabled]="busy() || loading() || entityForm.invalid">{{ editingId() ? 'Actualizar' : 'Guardar' }}</ion-button><ion-button fill="outline" (click)="reset()" [disabled]="busy()">Cancelar</ion-button></div>
+      <div class="form-actions"><ion-button class="primary" type="submit" [disabled]="busy() || pickingPhoto() || loading() || entityForm.invalid">{{ editingId() ? 'Actualizar' : 'Guardar' }}</ion-button><ion-button fill="outline" (click)="reset()" [disabled]="busy() || pickingPhoto()">Cancelar</ion-button></div>
       <p class="error" role="alert">{{ error() }}</p><p class="success" role="status">{{ status() }}</p>
     </form>
   </ion-card-content></ion-card>

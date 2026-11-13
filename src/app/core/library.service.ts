@@ -46,7 +46,7 @@ export class LibraryService {
         await this.dialogs.toast('Crea una playlist para agregar canciones.');
         await this.router.navigateByUrl('/home/playlist/nueva'); return;
       }
-      const sheet = await this.sheets.create({ header: 'Agregar a playlist', buttons: [
+      const sheet = await this.sheets.create({ cssClass: 'playlist-options-sheet', header: 'Agregar a playlist', buttons: [
         ...this.playlists().map(p => ({ text: p.playlist_nombre, data: p.playlist_id, role: 'selected' })),
         { text: 'Cancelar', role: 'cancel' }
       ] });
@@ -59,7 +59,7 @@ export class LibraryService {
     } catch (error) { await this.dialogs.toast(message(error)); }
   }
   async playlistOptions(playlist: Playlist): Promise<void> {
-    const sheet = await this.sheets.create({ header: playlist.playlist_nombre, buttons: [
+    const sheet = await this.sheets.create({ cssClass: 'playlist-options-sheet', header: playlist.playlist_nombre, buttons: [
       { text: 'Editar playlist', role: 'edit' }, { text: 'Borrar playlist', role: 'delete' }, { text: 'Cancelar', role: 'cancel' }
     ] });
     await sheet.present();

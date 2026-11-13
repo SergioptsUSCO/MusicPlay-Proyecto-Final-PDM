@@ -5,12 +5,15 @@ import { CatalogService } from '../../core/catalog.service';
 import { ApiService } from '../../core/api.service';
 import { DialogService } from '../../core/dialog.service';
 import { Song, Genre, Album, message } from '../../core/models';
+import { PhotoAccessService } from '../../core/photo-access.service';
 
 type Kind = 'song' | 'artist' | 'album' | 'genre';
 interface AdminRow { id: number; name: string; image?: string; artist?: string; genre?: string; audio?: boolean; }
 interface Draft { name: string; artist: string; album: string; composer: string; genre: number | null; }
 @Component({ selector: 'app-admin', host: { class: 'ion-page' }, imports: UI, templateUrl: './admin.page.html' })
 export class AdminPage implements OnInit {
+  readonly photos = inject(PhotoAccessService);
+  readonly pickingPhoto = signal(false);
   readonly api = inject(ApiService);
   readonly catalog = inject(CatalogService);
   private readonly dialogs = inject(DialogService);
@@ -56,9 +59,33 @@ export class AdminPage implements OnInit {
     this.editingId.set(0); this.draft = this.emptyDraft(); this.files = {}; this.error.set(''); this.status.set('');
     this.form?.resetForm(this.draft); this.clearFileInputs();
   }
-  selectFile(event: Event, key: 'primary' | 'cover'): void {
-    const file = (event.target as HTMLInputElement).files?.[0];
-    if (file) this.files[key] = file; else delete this.files[key];
+  async selectFile(event: Event, key: 'primary' | 'cover'): Promise<void> {
+    this.error.set(''); this.status.set('');
+    delete this.files[key];
+    const photo = key === 'cover' || this.kind() !== 'song';
+    try {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (!file) { delete this.files[key]; this.status.set('No se seleccionó ningún archivo. Puedes volver a intentarlo.'); return; }
+      if (photo && !file.type.startsWith('image/')) { this.error.set('Selecciona una imagen.'); return; }
+      await file.slice(0, 1).arrayBuffer();
+      this.files[key] = file;
+    } catch (error) {
+      (event.target as HTMLInputElement).value = '';
+      const denied = error instanceof DOMException && ['NotAllowedError', 'SecurityError'].includes(error.name);
+      this.error.set(denied
+        ? 'No se permitió el acceso al archivo. Revisa los permisos e inténtalo de nuevo.'
+        : 'No se pudo leer el archivo seleccionado. Revisa el acceso e inténtalo de nuevo.');
+    }
+  }
+  async selectNativePhoto(key: 'primary' | 'cover'): Promise<void> {
+    if (this.pickingPhoto() || this.busy()) return;
+    this.pickingPhoto.set(true); this.error.set(''); this.status.set('');
+    try {
+      const file = await this.photos.pickPhoto();
+      if (file) this.files[key] = file;
+      this.status.set(file ? `Foto seleccionada: ${file.name}` : 'No se seleccionó ninguna foto.');
+    } catch (error) { this.error.set(message(error)); }
+    finally { this.pickingPhoto.set(false); }
   }
   async edit(row: AdminRow): Promise<void> {
     this.reset(); this.editingId.set(row.id); this.draft.name = row.name;
@@ -75,6 +102,7 @@ export class AdminPage implements OnInit {
     document.getElementById('admin-editor')?.scrollIntoView({ behavior: 'smooth' });
   }
   async save(): Promise<void> {
+    if (this.pickingPhoto()) return;
     if (this.form?.invalid || !this.draft.name.trim() || this.busy()) { this.error.set('Completa los campos obligatorios.'); return; }
     this.busy.set(true); this.error.set(''); this.status.set('');
     const id = this.editingId();

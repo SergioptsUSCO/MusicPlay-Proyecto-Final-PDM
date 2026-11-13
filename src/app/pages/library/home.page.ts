@@ -40,7 +40,7 @@ export class HomePage implements OnInit {
           this.suggestions.set((data.recomendaciones || []).flatMap(rec => {
             const song = this.catalog.songs().find(song => song.song_id === rec.cancion_id); return song ? [song] : [];
           }));
-        } catch { /* El catálogo sirve de respaldo cuando el modelo no está disponible. */ }
+        } catch {}
         if (!this.suggestions().length) this.suggestions.set(this.catalog.songs().filter(song => !!song.song_archivo_ruta).slice(0, 10));
       }
     } catch (error) { this.error.set(message(error)); } finally { this.loading.set(false); }

@@ -17,7 +17,10 @@
         <ion-checkbox [checked]="showPassword" (ionChange)="showPassword = $event.detail.checked" labelPlacement="end">Mostrar contraseña</ion-checkbox>
         @if (register) {
           <ion-note>Al menos 8 caracteres, mayúscula, minúscula, número y un carácter especial.</ion-note>
-          <ion-checkbox formControlName="terms" labelPlacement="end">Acepto los Términos y Condiciones de uso.</ion-checkbox>
+          <div class="terms-consent">
+            <ion-checkbox formControlName="terms" aria-label="Acepto los Términos y Condiciones de uso" />
+            <span>Acepto los <button type="button" class="terms-link" aria-haspopup="dialog" (click)="termsOpen.set(true)">Términos y Condiciones de uso</button>.</span>
+          </div>
         }
         <ion-button type="submit" expand="block" class="primary" [disabled]="busy()">@if (busy()) { <ion-spinner name="crescent" /> } @else { {{ register ? 'Registrarse' : 'Iniciar sesión' }} }</ion-button>
         @if (!register) { <a class="forgot" routerLink="/recuperar">¿Olvidaste tu contraseña?</a> }
@@ -28,3 +31,33 @@
     @if (!register) { <ion-button class="guest-button" fill="outline" (click)="session.startGuest()">Entrar como invitado</ion-button> }
   </main>
 </ion-content>
+@if (register) {
+  <ion-modal class="terms-modal" [isOpen]="termsOpen()" (didDismiss)="termsOpen.set(false)" aria-labelledby="terms-title">
+    <ng-template>
+      <ion-header class="ion-no-border">
+        <ion-toolbar>
+          <ion-title id="terms-title">Términos y Condiciones de uso</ion-title>
+          <ion-buttons slot="end"><ion-button aria-label="Cerrar términos y condiciones" (click)="termsOpen.set(false)"><ion-icon slot="icon-only" name="close-outline" /></ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="terms-modal-content">
+        <article class="terms-copy">
+          <p>Estos términos describen las condiciones de uso de MusicPlay. Léelos antes de crear tu cuenta.</p>
+          <h2>Cuenta y acceso</h2>
+          <p>Proporciona información correcta al registrarte y mantén tu contraseña en privado. Utiliza únicamente cuentas y credenciales que te pertenezcan.</p>
+          <h2>Uso de la plataforma</h2>
+          <p>MusicPlay permite escuchar el catálogo disponible, guardar favoritos y organizar playlists. Usa estas funciones de forma responsable, sin interferir con el servicio ni acceder a cuentas ajenas.</p>
+          <h2>Contenido y derechos</h2>
+          <p>Respeta los derechos de los titulares de la música y las imágenes. Sube únicamente contenido propio o para el que tengas autorización. El acceso al catálogo no concede derechos para distribuirlo o comercializarlo.</p>
+          <h2>Datos y preferencias</h2>
+          <p>La aplicación utiliza los datos de tu cuenta, tus preferencias y tu historial de reproducción para gestionar el acceso, tu biblioteca y las recomendaciones. Selecciona únicamente las fotos que quieras usar como portada.</p>
+          <h2>Disponibilidad</h2>
+          <p>La reproducción requiere conexión a la API y acceso a los archivos del catálogo. La disponibilidad puede variar por mantenimiento o problemas de conexión.</p>
+          <h2>Aceptación</h2>
+          <p>Para crear una cuenta debes marcar la casilla de aceptación del formulario. Abrir o cerrar este documento no marca esa casilla automáticamente.</p>
+        </article>
+      </ion-content>
+      <ion-footer class="ion-no-border"><ion-toolbar><ion-button expand="block" class="primary" (click)="termsOpen.set(false)">Entendido</ion-button></ion-toolbar></ion-footer>
+    </ng-template>
+  </ion-modal>
+}

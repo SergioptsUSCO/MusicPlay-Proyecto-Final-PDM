@@ -64,6 +64,8 @@ OAUTH_FAILURE_URL=musicplay://auth/callback
 
 El manifiesto registra ese enlace y el plugin App recibe el token. La URI de redirección autorizada en Google continúa siendo el callback HTTPS de **Spring**, `/login/oauth2/code/google`. Las variables anteriores son el destino final después de ese callback. El backend actual tiene un único par de destinos; para probar web y Android con Google simultáneamente se necesitan instancias/perfiles con destinos distintos.
 
+Para subir fotos en Android, `PhotoAccessPlugin` solicita el permiso de lectura correspondiente antes de abrir el selector nativo. Admite acceso completo o a fotos seleccionadas en Android 14+. Si ya está concedido, abre el selector directamente; si se deniega, muestra un mensaje para revisar los permisos de MusicPlay en Ajustes. Se utiliza en portadas de playlists y fotos de administración. En web se conserva el selector de archivos del navegador. Los cambios nativos requieren instalar el APK actualizado.
+
 ## Android
 
 El proyecto `android/` ya está generado. Requiere JDK 21, Android Studio 2025.2.1 o posterior y Android SDK 36. La versión mínima es Android 7 / API 24.
@@ -101,6 +103,6 @@ Las listas de ejemplo se sustituyen por los datos reales del backend. El reprodu
 npm run test:e2e
 ```
 
-Las doce pruebas usan Chrome instalado y una API simulada; cubren anchuras de 360, 768 y 1440 px, errores de ejecución, acceso, invitado, búsqueda, reproducción persistente, avance del audio sin saltos automáticos, búsqueda manual con la barra de progreso, favoritos, recuperación, preferencias, envíos multipart y recepción del token OAuth. Guardan capturas de referencia en `test-results/`. No sustituyen las pruebas con el backend real, una cuenta Google o un dispositivo Android.
+Las pruebas usan Chrome instalado y una API simulada; cubren anchuras de 360, 768 y 1440 px, errores de ejecución, acceso, invitado, búsqueda, reproducción persistente, avance del audio sin saltos automáticos, búsqueda manual con la barra de progreso, favoritos, recuperación, preferencias, envíos multipart, acceso denegado al leer fotos y recepción del token OAuth. Guardan capturas de referencia en `test-results/`. No sustituyen las pruebas con el backend real, una cuenta Google o un dispositivo Android.
 
 Referencias: [compatibilidad de Angular](https://angular.dev/reference/versions), [Ionic Angular](https://ionicframework.com/docs/angular/overview) y [configuración de Capacitor](https://capacitorjs.com/docs/config).

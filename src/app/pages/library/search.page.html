@@ -1,6 +1,6 @@
 <section class="search-page">
   <h1>Buscar</h1><p class="muted">Canciones, álbumes y artistas</p>
-  <ion-searchbar placeholder="¿Qué quieres escuchar?" [debounce]="300" [value]="query()" (ionInput)="search($event.detail.value || '')" aria-label="Buscar música" />
+  <ion-searchbar class="searchbar" placeholder="¿Qué quieres escuchar?" [debounce]="300" [value]="query()" (ionInput)="search($event.detail.value || '')" aria-label="Buscar música" />
   <ion-segment [value]="type()" (ionChange)="type.set('' + $event.detail.value); search(query())" [scrollable]="true"><ion-segment-button value="todos"><ion-label>Todo</ion-label></ion-segment-button><ion-segment-button value="canciones"><ion-label>Canciones</ion-label></ion-segment-button><ion-segment-button value="albumes"><ion-label>Álbumes</ion-label></ion-segment-button><ion-segment-button value="artistas"><ion-label>Artistas</ion-label></ion-segment-button></ion-segment>
   @if (busy()) { <p class="empty-state"><ion-spinner /> Buscando...</p> }
   <p class="error" role="alert">{{ error() }}</p>

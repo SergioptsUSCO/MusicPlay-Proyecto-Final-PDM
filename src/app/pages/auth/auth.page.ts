@@ -5,8 +5,9 @@ import { UI } from '../../shared/ui';
 import { SessionService } from '../../core/session.service';
 import { ApiService } from '../../core/api.service';
 import { message } from '../../core/models';
+import { IonModal } from '@ionic/angular/ion-modal';
 
-@Component({ selector: 'app-auth', host: { class: 'ion-page' }, imports: UI, templateUrl: './auth.page.html' })
+@Component({ selector: 'app-auth', host: { class: 'ion-page' }, imports: [...UI, IonModal], templateUrl: './auth.page.html' })
 export class AuthPage {
   readonly session = inject(SessionService);
   private readonly api = inject(ApiService);
@@ -14,6 +15,7 @@ export class AuthPage {
   private readonly router = inject(Router);
   readonly register = !!this.route.snapshot.data['register'];
   readonly busy = signal(false);
+  readonly termsOpen = signal(false);
   readonly error = signal(this.route.snapshot.queryParamMap.get('oauthError') || new URLSearchParams(window.location.search).get('oauthError') || '');
   showPassword = false;
   readonly form = inject(FormBuilder).nonNullable.group({

@@ -1,15 +1,15 @@
 <ion-header class="ion-no-border"><ion-toolbar class="landing-toolbar">
   <a slot="start" class="brand" routerLink="/"><img src="assets/logo.svg" alt="">MusicPlay</a>
   <nav class="landing-nav" aria-label="Principal"><ion-button fill="clear" (click)="scroll('sec-inicio')">Inicio</ion-button><ion-button fill="clear" (click)="scroll('sec-tendencias')">Artistas en tendencia</ion-button><ion-button fill="clear" (click)="scroll('sec-albumes')">Álbumes destacados</ion-button><ion-button fill="clear" (click)="scroll('sec-reproducido')">Reciente</ion-button></nav>
-  <ion-buttons slot="end"><ion-button fill="outline" routerLink="/login">Iniciar sesión</ion-button><ion-button fill="solid" class="primary" routerLink="/register">Registrarse</ion-button></ion-buttons>
+  <ion-buttons slot="end"><ion-button fill="solid" class="primary" routerLink="/login">Iniciar sesión</ion-button><ion-button fill="solid" class="primary" routerLink="/register">Registrarse</ion-button></ion-buttons>
 </ion-toolbar></ion-header>
 <ion-content><main class="landing-page">
   <section id="sec-inicio" class="landing-hero"><div><h1>Música para<br>Cada momento</h1><p>¡Escucha la música que más te gusta en MusicPlay!</p><ion-button class="primary" routerLink="/login">¡Empieza ahora!</ion-button></div></section>
   <section id="sec-tendencias" class="landing-section"><h2><span class="pink">↗</span> Artistas en tendencia</h2>
-    <ion-grid><ion-row>@for (artist of artists(); track artist.artista_id) { <ion-col size="6" sizeSm="4" sizeLg="2"><ion-card class="landing-card"><img [src]="api.asset(artist.artista_foto_ruta)" [alt]="artist.artista_nombre" loading="lazy"><ion-card-content>{{ artist.artista_nombre }}</ion-card-content></ion-card></ion-col> } @empty { <p class="empty-state">{{ states()['artists'] }}</p> }</ion-row></ion-grid>
+    <ion-grid><ion-row class="scroll-horizontal">@for (artist of artists(); track artist.artista_id) { <ion-col size="6" sizeSm="4" sizeLg="2"><ion-card class="landing-card"><img [src]="api.asset(artist.artista_foto_ruta)" [alt]="artist.artista_nombre" loading="lazy"><ion-card-content>{{ artist.artista_nombre }}</ion-card-content></ion-card></ion-col> } @empty { <p class="empty-state">{{ states()['artists'] }}</p> }</ion-row></ion-grid>
   </section>
   <section id="sec-albumes" class="landing-section"><h2><span class="purple">☆</span> Álbumes destacados</h2>
-    <ion-grid><ion-row>@for (album of albums(); track album.album_id) { <ion-col size="6" sizeSm="4" sizeLg="2"><ion-card class="landing-card"><img [src]="api.asset(album.album_portada_ruta)" [alt]="album.album_nombre" loading="lazy"><ion-card-content>{{ album.album_nombre }}</ion-card-content></ion-card></ion-col> } @empty { <p class="empty-state">{{ states()['albums'] }}</p> }</ion-row></ion-grid>
+    <ion-grid><ion-row class="scroll-horizontal">@for (album of albums(); track album.album_id) { <ion-col size="6" sizeSm="4" sizeLg="2"><ion-card class="landing-card"><img [src]="api.asset(album.album_portada_ruta)" [alt]="album.album_nombre" loading="lazy"><ion-card-content>{{ album.album_nombre }}</ion-card-content></ion-card></ion-col> } @empty { <p class="empty-state">{{ states()['albums'] }}</p> }</ion-row></ion-grid>
   </section>
   <section id="sec-reproducido" class="landing-section"><h2><span class="cyan">◷</span> Reproducido recientemente</h2><ion-list class="landing-recent" lines="none">
     @for (song of recent(); track song.song_nombre + '::' + song.song_artista) { <ion-item><ion-thumbnail slot="start"><img [src]="api.asset(song.song_portada_ruta)" alt="" loading="lazy"></ion-thumbnail><ion-label><h3>{{ song.song_nombre }}</h3><p>{{ song.song_artista }}</p></ion-label></ion-item> } @empty { <p class="empty-state">{{ states()['recent'] }}</p> }

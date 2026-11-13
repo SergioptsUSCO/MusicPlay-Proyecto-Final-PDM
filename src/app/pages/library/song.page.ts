@@ -21,7 +21,7 @@ import { Song, Album, Genre, message } from '../../core/models';
       <div class="song-detail-grid">
         <ion-card button [routerLink]="['/home/artista', s.song_artista]"><ion-card-content><small>Artista</small><strong>{{ catalog.artistName(s.song_artista) }}</strong></ion-card-content></ion-card>
         <ion-card><ion-card-content><small>Género</small><strong>{{ genre() }}</strong></ion-card-content></ion-card>
-        <ion-card button [disabled]="!album()" [routerLink]="album() ? ['/home/album', album()!.album_id] : null"><ion-card-content><small>Álbum</small><strong>{{ album()?.album_nombre || 'Sin álbum' }}</strong></ion-card-content></ion-card>
+        <ion-card button [disabled]="!album()" [routerLink]="album() ? ['/home/album', album()!.album_id] : null"><ion-card-content><small>Álbum</small><strong>{{ album()?.album_nombre || (albumError() ? 'Álbum no disponible' : 'Sin álbum') }}</strong>@if (albumError()) { <p class="error" role="alert">{{ albumError() }}</p> }</ion-card-content></ion-card>
         <ion-card><ion-card-content><small>Compositor</small><strong>{{ s.song_compositor || 'Sin compositor' }}</strong></ion-card-content></ion-card>
       </div>
     </section>
@@ -36,6 +36,7 @@ export class SongPage {
   private readonly route = inject(ActivatedRoute);
   readonly song = signal<Song | null>(null);
   readonly album = signal<Album | null>(null);
+  readonly albumError = signal('');
   readonly genre = signal('Sin género');
   readonly loading = signal(true);
   readonly error = signal('');
@@ -43,15 +44,36 @@ export class SongPage {
   constructor() { this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(params => { void this.load(Number(params.get('id'))); }); }
   private async load(id: number): Promise<void> {
     const requestId = ++this.requestId; this.loading.set(true); this.error.set(''); this.song.set(null); this.album.set(null); this.genre.set('Sin género');
+    this.albumError.set('');
     try {
       await this.catalog.load(); this.player.setFallback(this.catalog.songs());
       const song = await this.api.request<Song>(`/api/buscarCancion/${id}`);
       const [album, genre] = await Promise.all([
-        this.api.request<Album | null>(`/api/canciones/${id}/album`).catch(() => null),
+        this.resolveAlbum(song).catch(() => {
+          if (requestId === this.requestId) this.albumError.set('No se pudo consultar el álbum. Inténtalo de nuevo más tarde.');
+          return null;
+        }),
         song.song_genero ? this.api.request<Genre>(`/api/buscarGenero/${song.song_genero}`).catch(() => null) : Promise.resolve(null)
       ]);
       if (requestId === this.requestId) { this.song.set(song); this.album.set(album); this.genre.set(genre?.nombre_genero || 'Sin género'); }
     } catch (error) { if (requestId === this.requestId) this.error.set(message(error)); }
     finally { if (requestId === this.requestId) this.loading.set(false); }
+  }
+  private async resolveAlbum(song: Song): Promise<Album | null> {
+    try {
+      const album = await this.api.request<Album | null>(`/api/canciones/${song.song_id}/album`);
+      if (album?.album_id && album.album_nombre) return album;
+    } catch { /* Compatibilidad con servidores que no exponen la consulta directa. */ }
+    const albums = [...this.catalog.albums()].sort((a, b) =>
+      Number(b.artista_album === song.song_artista) - Number(a.artista_album === song.song_artista));
+    let failed = false;
+    for (const album of albums) {
+      try {
+        const songs = await this.api.request<Song[]>(`/api/albumes/${album.album_id}/canciones`);
+        if (songs.some(item => item.song_id === song.song_id)) return album;
+      } catch { failed = true; }
+    }
+    if (failed) throw new Error('No se pudo comprobar la pertenencia al álbum.');
+    return null;
   }
 }

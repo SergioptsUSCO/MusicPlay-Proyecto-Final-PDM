@@ -1,8 +1,7 @@
 <ion-header class="ion-no-border"><ion-toolbar class="music-toolbar">
   <ion-buttons slot="start">
     <ion-menu-button menu="library" aria-label="Abrir biblioteca" />
-    <a class="brand" routerLink="/home"><img src="assets/logo.svg" alt="MusicPlay"></a>
-    <ion-button fill="solid" class="search-button" routerLink="/home/buscar" aria-label="Buscar"><ion-icon name="search-outline" slot="start" /><span>Buscar</span></ion-button>
+    <ion-button fill="solid" class="search-button" routerLink="/home/buscar" aria-label="Buscar"><ion-icon name="search-outline" /><span>Buscar</span></ion-button>
     <ion-button routerLink="/home" aria-label="Inicio"><ion-icon name="home-outline" slot="icon-only" /></ion-button>
   </ion-buttons>
   <ion-buttons slot="end">
@@ -52,7 +51,6 @@
         <ion-button fill="clear" (click)="player.adjacent(1)" aria-label="Siguiente canción"><ion-icon name="play-skip-forward" slot="icon-only" /></ion-button>
         <ion-button fill="clear" [disabled]="!player.current()" [routerLink]="['/home/cancion', player.current()?.song_id || 0]" aria-label="Ver canción"><ion-icon name="open-outline" slot="icon-only" /></ion-button>
       </div>
-      <!-- ionChange solo responde al usuario; ionInput también se emite al actualizar value desde timeupdate. -->
       <div class="player-progress"><span>{{ time(player.elapsed()) }}</span><ion-range aria-label="Progreso de reproducción" [min]="0" [max]="100" [value]="player.duration() ? player.elapsed() / player.duration() * 100 : 0" (ionChange)="player.seek(+$event.detail.value)" [disabled]="!player.duration()" /><span>{{ time(player.duration()) }}</span></div>
     </div>
     <div class="volume-control"><ion-icon name="volume-high-outline" /><ion-range aria-label="Volumen" [min]="0" [max]="1" [step]="0.01" [value]="player.volume()" (ionInput)="player.setVolume(+$event.detail.value)" /></div>

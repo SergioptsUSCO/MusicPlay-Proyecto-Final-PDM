@@ -6,6 +6,34 @@ const song = { song_id: 1, song_nombre: 'Canción de prueba', song_artista: 1, s
 const playlist = { playlist_id: 1, playlist_nombre: 'Mi playlist' };
 const user = { usuario_id: 1, usuario_nombre: 'Sergio', usuario_rol: 1, usuario_preferencias_configuradas: true };
 
+test('los términos del registro abren un modal sin aceptar la casilla automáticamente', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 800 });
+  await mockApi(page); await page.goto('/#/register');
+  const checkbox = page.getByRole('checkbox', { name: 'Acepto los Términos y Condiciones de uso', exact: true });
+  const link = page.getByRole('button', { name: 'Términos y Condiciones de uso', exact: true });
+  await expect(link).toHaveCSS('color', 'rgb(87, 199, 133)');
+  await link.click();
+  const modal = page.locator('ion-modal.terms-modal');
+  await expect(modal).toBeVisible();
+  await expect(modal.getByRole('heading', { name: 'Cuenta y acceso' })).toBeVisible();
+  await modal.getByRole('button', { name: 'Entendido', exact: true }).click();
+  await expect(modal).not.toBeVisible();
+  await expect(checkbox).not.toBeChecked();
+  await link.click(); await expect(modal).toBeVisible();
+  await modal.getByRole('button', { name: 'Cerrar términos y condiciones' }).click();
+  await expect(modal).not.toBeVisible(); await expect(checkbox).not.toBeChecked();
+});
+
+test('la información recupera el álbum si la consulta directa devuelve 403', async ({ page }) => {
+  await mockApi(page); await authenticate(page);
+  await page.route('**/api/canciones/1/album', route => route.fulfill({ status: 403, json: {}, headers: { 'access-control-allow-origin': '*' } }));
+  await page.goto('/#/home/cancion/1');
+  const card = page.locator('.song-detail-grid ion-card').filter({ hasText: 'Álbum' });
+  await expect(card).toContainText(album.album_nombre);
+  await card.click();
+  await expect(page).toHaveURL(/#\/home\/album\/1$/);
+});
+
 async function mockApi(page: Page): Promise<void> {
   let likes: number[] = [1];
   await page.route('**/api/**', async route => {
@@ -202,4 +230,27 @@ test('el callback OAuth consume el token antes del guard y lo elimina de la URL'
   await expect(page.getByRole('heading', { name: 'Canciones disponibles' })).toBeVisible();
   await expect(page).toHaveURL(/\/#\/home$/);
   expect(await page.evaluate(() => localStorage.getItem('jwtToken'))).toBe('test-token');
+});
+
+test('la portada maneja el acceso denegado y permite volver a elegir la foto', async ({ page }) => {
+  await mockApi(page); await authenticate(page);
+  await page.addInitScript(() => {
+    const original = Blob.prototype.arrayBuffer;
+    let denyNextRead = true;
+    Blob.prototype.arrayBuffer = function () {
+      if (denyNextRead) { denyNextRead = false; return Promise.reject(new DOMException('Acceso denegado', 'NotAllowedError')); }
+      return original.call(this);
+    };
+  });
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto('/#/home/playlist/nueva');
+  const file = { name: 'portada.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==', 'base64') };
+  const input = page.locator('input[type="file"]');
+  await input.setInputFiles(file);
+  await expect(page.getByRole('alert')).toContainText('No se permitió el acceso a la foto');
+  await expect(page.locator('.playlist-preview')).toHaveAttribute('src', 'assets/logo.svg');
+  await input.setInputFiles(file);
+  await expect(page.locator('.playlist-preview')).toHaveAttribute('src', /^blob:/);
+  await expect(page.getByRole('alert')).not.toBeVisible();
+  expect(errors).toEqual([]);
 });
