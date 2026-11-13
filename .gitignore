@@ -1,0 +1,44 @@
+# Dependencias, compilaciones y resultados de pruebas
+node_modules/
+.angular/
+www/
+dist/
+out-tsc/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+*.log
+
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.jks
+*.keystore
+*.p12
+*.pem
+
+# Herramientas y carpetas del cliente anterior
+/.github/modernize/
+/app/
+/page/
+/styles/
+/.nojekyll
+
+# Android: conservar código, recursos y Gradle Wrapper
+/android/.gradle/
+/android/.idea/
+/android/local.properties
+/android/**/build/
+/android/capacitor-cordova-android-plugins/
+/android/app/src/main/assets/public/
+/android/app/src/main/assets/capacitor.config.json
+/android/app/src/main/assets/capacitor.plugins.json
+/android/app/src/main/res/xml/config.xml
+*.apk
+*.aab

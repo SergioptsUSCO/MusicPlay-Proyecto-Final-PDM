@@ -1,0 +1,1 @@
+{ "name": "MusicPlay", "type": "angular-standalone", "integrations": { "capacitor": {} } }

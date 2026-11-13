@@ -1,0 +1,23 @@
+<section class="search-page">
+  <h1>Buscar</h1><p class="muted">Canciones, álbumes y artistas</p>
+  <ion-searchbar placeholder="¿Qué quieres escuchar?" [debounce]="300" [value]="query()" (ionInput)="search($event.detail.value || '')" aria-label="Buscar música" />
+  <ion-segment [value]="type()" (ionChange)="type.set('' + $event.detail.value); search(query())" [scrollable]="true"><ion-segment-button value="todos"><ion-label>Todo</ion-label></ion-segment-button><ion-segment-button value="canciones"><ion-label>Canciones</ion-label></ion-segment-button><ion-segment-button value="albumes"><ion-label>Álbumes</ion-label></ion-segment-button><ion-segment-button value="artistas"><ion-label>Artistas</ion-label></ion-segment-button></ion-segment>
+  @if (busy()) { <p class="empty-state"><ion-spinner /> Buscando...</p> }
+  <p class="error" role="alert">{{ error() }}</p>
+  @if (!query().trim() && type() === 'todos') { <p class="empty-state">Escribe una canción, álbum o artista para buscar.</p> }
+  @else if (!busy()) {
+    @if (type() === 'todos' || type() === 'canciones') {
+      <section class="music-section"><div class="section-header"><h2>Canciones <small>({{ results().canciones.length }})</small></h2>@if (results().canciones.length > 10 && !expanded().includes('canciones')) { <ion-button fill="clear" (click)="expand('canciones')">Ver todo</ion-button> }</div><app-song-list [songs]="expanded().includes('canciones') ? results().canciones : results().canciones.slice(0, 10)" /></section>
+    }
+    @if (type() === 'todos' || type() === 'albumes') {
+      <section class="music-section"><div class="section-header"><h2>Álbumes <small>({{ results().albumes.length }})</small></h2>@if (results().albumes.length > 4 && !expanded().includes('albumes')) { <ion-button fill="clear" (click)="expand('albumes')">Ver todo</ion-button> }</div><div class="catalog-grid">
+        @for (album of expanded().includes('albumes') ? results().albumes : results().albumes.slice(0, 4); track album.album_id) { <ion-card button [routerLink]="['/home/album', album.album_id]" class="catalog-card"><img [src]="api.asset(album.album_portada_ruta)" alt="" loading="lazy"><ion-card-content><strong>{{ album.album_nombre }}</strong><small>{{ catalog.artistName(album.artista_album) }}</small></ion-card-content></ion-card> } @empty { <p class="empty-state">No hay álbumes para esta búsqueda.</p> }
+      </div></section>
+    }
+    @if (type() === 'todos' || type() === 'artistas') {
+      <section class="music-section"><div class="section-header"><h2>Artistas <small>({{ results().artistas.length }})</small></h2>@if (results().artistas.length > 4 && !expanded().includes('artistas')) { <ion-button fill="clear" (click)="expand('artistas')">Ver todo</ion-button> }</div><div class="catalog-grid">
+        @for (artist of expanded().includes('artistas') ? results().artistas : results().artistas.slice(0, 4); track artist.artista_id) { <ion-card button [routerLink]="['/home/artista', artist.artista_id]" class="catalog-card artist-card"><img [src]="api.asset(artist.artista_foto_ruta)" alt="" loading="lazy"><ion-card-content>{{ artist.artista_nombre }}</ion-card-content></ion-card> } @empty { <p class="empty-state">No hay artistas para esta búsqueda.</p> }
+      </div></section>
+    }
+  }
+</section>

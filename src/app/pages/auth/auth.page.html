@@ -1,0 +1,30 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="public-toolbar">
+    <a class="brand" routerLink="/" slot="start"><img src="assets/logo.svg" alt="">Musicplay</a>
+    <ion-buttons slot="end"><ion-button fill="solid" class="primary" [routerLink]="register ? '/login' : '/register'">{{ register ? 'Iniciar sesión' : 'Registro' }}</ion-button></ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <main class="auth-page">
+    <h1 class="auth-title">{{ register ? 'Regístrate...' : 'Conéctate...' }}</h1>
+    <ion-card class="auth-card"><ion-card-content>
+      <form [formGroup]="form" (ngSubmit)="submit()" class="stack">
+        @if (registered) { <p class="success" role="status">Usuario registrado. Ya puedes iniciar sesión.</p> }
+        <p class="error" role="alert">{{ error() }}</p>
+        @if (register) { <ion-input label="Nombre de usuario" labelPlacement="stacked" fill="outline" placeholder="¿Cómo quieres que te llamemos?" formControlName="name" autocomplete="nickname" /> }
+        <ion-input label="Email" labelPlacement="stacked" fill="outline" type="email" placeholder="Ingresa tu correo electrónico..." formControlName="email" autocomplete="email" />
+        <ion-input label="Contraseña" labelPlacement="stacked" fill="outline" [type]="showPassword ? 'text' : 'password'" placeholder="Ingresa tu contraseña..." formControlName="password" [autocomplete]="register ? 'new-password' : 'current-password'" />
+        <ion-checkbox [checked]="showPassword" (ionChange)="showPassword = $event.detail.checked" labelPlacement="end">Mostrar contraseña</ion-checkbox>
+        @if (register) {
+          <ion-note>Al menos 8 caracteres, mayúscula, minúscula, número y un carácter especial.</ion-note>
+          <ion-checkbox formControlName="terms" labelPlacement="end">Acepto los Términos y Condiciones de uso.</ion-checkbox>
+        }
+        <ion-button type="submit" expand="block" class="primary" [disabled]="busy()">@if (busy()) { <ion-spinner name="crescent" /> } @else { {{ register ? 'Registrarse' : 'Iniciar sesión' }} }</ion-button>
+        @if (!register) { <a class="forgot" routerLink="/recuperar">¿Olvidaste tu contraseña?</a> }
+      </form>
+    </ion-card-content></ion-card>
+    <div class="divider">o</div>
+    <ion-button class="google-button" (click)="google()"><img src="assets/google-logo.svg" alt="" width="22" height="22">Entrar con Google</ion-button>
+    @if (!register) { <ion-button class="guest-button" fill="outline" (click)="session.startGuest()">Entrar como invitado</ion-button> }
+  </main>
+</ion-content>

@@ -1,0 +1,33 @@
+<ion-header class="ion-no-border"><ion-toolbar class="public-toolbar"><a class="brand" routerLink="/home" slot="start"><img src="assets/logo.svg" alt="">MusicPlay Admin</a><ion-buttons slot="end"><ion-button fill="outline" routerLink="/home">Volver</ion-button></ion-buttons></ion-toolbar></ion-header>
+<ion-content><main class="admin-shell page-container">
+  <ion-segment [value]="kind()" (ionChange)="setKind($event.detail.value)" [scrollable]="true" [disabled]="busy()"><ion-segment-button value="song"><ion-label>Canciones</ion-label></ion-segment-button><ion-segment-button value="artist"><ion-label>Artistas</ion-label></ion-segment-button><ion-segment-button value="album"><ion-label>Álbumes</ion-label></ion-segment-button><ion-segment-button value="genre"><ion-label>Géneros</ion-label></ion-segment-button></ion-segment>
+  <ion-card id="admin-editor" class="admin-panel"><ion-card-content>
+    <div class="section-header"><div><p class="eyebrow">CRUD</p><h1>{{ labels[kind()] }}</h1></div><ion-button class="primary" (click)="reset()" [disabled]="busy()">Nuevo registro</ion-button></div>
+    <form #entityForm="ngForm" (ngSubmit)="save()" class="stack">
+      <div class="admin-form-grid">
+        <ion-input label="Nombre *" labelPlacement="stacked" fill="outline" [(ngModel)]="draft.name" name="name" required />
+        @if (kind() === 'song' || kind() === 'album') {
+          <ion-select label="Artista *" labelPlacement="stacked" fill="outline" [(ngModel)]="draft.artist" (ionChange)="draft.album = ''" name="artist" required interface="popover"><ion-select-option value="">Selecciona un artista</ion-select-option>@for (artist of catalog.artists(); track artist.artista_id) { <ion-select-option [value]="artist.artista_nombre">{{ artist.artista_nombre }}</ion-select-option> }</ion-select>
+        }
+        @if (kind() === 'song') {
+          <ion-select label="Álbum" labelPlacement="stacked" fill="outline" [(ngModel)]="draft.album" name="album" [disabled]="!draft.artist" interface="popover"><ion-select-option value="">Sin álbum</ion-select-option>@for (album of availableAlbums; track album.album_id) { <ion-select-option [value]="album.album_nombre">{{ album.album_nombre }}</ion-select-option> }</ion-select>
+          <ion-input label="Compositor" labelPlacement="stacked" fill="outline" [(ngModel)]="draft.composer" name="composer" />
+          <ion-select label="Género *" labelPlacement="stacked" fill="outline" [(ngModel)]="draft.genre" name="genre" required interface="popover">@for (genre of genres(); track genre.id) { <ion-select-option [value]="genre.id">{{ genre.nombre_genero }}</ion-select-option> }</ion-select>
+        }
+      </div>
+      @if (kind() !== 'genre') {
+        <div class="admin-file-grid"><label class="file-field">{{ kind() === 'song' ? 'Archivo de la canción' : kind() === 'artist' ? 'Foto del artista' : 'Portada del álbum' }}<input #primaryFile type="file" [accept]="kind() === 'song' ? 'audio/*' : 'image/*'" (change)="selectFile($event, 'primary')"></label>
+          @if (kind() === 'song') { <label class="file-field">Portada de la canción<input #coverFile type="file" accept="image/*" (change)="selectFile($event, 'cover')"></label> }
+        </div>
+      }
+      <div class="form-actions"><ion-button class="primary" type="submit" [disabled]="busy() || loading() || entityForm.invalid">{{ editingId() ? 'Actualizar' : 'Guardar' }}</ion-button><ion-button fill="outline" (click)="reset()" [disabled]="busy()">Cancelar</ion-button></div>
+      <p class="error" role="alert">{{ error() }}</p><p class="success" role="status">{{ status() }}</p>
+    </form>
+  </ion-card-content></ion-card>
+  <ion-card class="admin-panel"><ion-card-content>
+    @if (loading()) { <ion-spinner aria-label="Cargando catálogo" /> }
+    <div class="admin-table-wrap" tabindex="0" role="region" aria-label="Catálogo editable"><table class="admin-table"><thead><tr>@if (kind() !== 'genre') { <th>Portada</th> }<th>Nombre</th>@if (kind() === 'song' || kind() === 'album') { <th>Artista</th> }@if (kind() === 'song') { <th>Género</th><th>Archivo</th> }<th>Acciones</th></tr></thead><tbody>
+      @for (row of rows(); track row.id) { <tr>@if (kind() !== 'genre') { <td><img [src]="api.asset(row.image)" alt="" loading="lazy"></td> }<td>{{ row.name }}</td>@if (kind() === 'song' || kind() === 'album') { <td>{{ row.artist }}</td> }@if (kind() === 'song') { <td>{{ row.genre }}</td><td>{{ row.audio ? 'Disponible' : 'Sin audio' }}</td> }<td><div class="admin-row-actions"><ion-button fill="outline" size="small" (click)="edit(row)" [disabled]="busy()" [attr.aria-label]="'Editar ' + row.name"><ion-icon name="pencil-outline" slot="start" />Editar</ion-button><ion-button fill="outline" color="danger" size="small" (click)="remove(row)" [disabled]="busy()" [attr.aria-label]="'Eliminar ' + row.name"><ion-icon name="trash-outline" slot="start" />Eliminar</ion-button></div></td></tr> } @empty { <tr><td colspan="6">No hay registros disponibles.</td></tr> }
+    </tbody></table></div>
+  </ion-card-content></ion-card>
+</main></ion-content>

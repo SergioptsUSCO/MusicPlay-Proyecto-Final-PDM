@@ -1,0 +1,34 @@
+<ion-content>
+  <main class="recovery-page">
+    <ion-card class="recovery-card"><ion-card-content>
+      <h1 class="gradient-text">{{ step() === 'email' ? 'Recupera tu acceso' : step() === 'code' ? 'Confirmación' : step() === 'done' ? 'Todo listo' : 'Nueva contraseña' }}</h1>
+      <p class="success" role="status">{{ status() }}</p><p class="error" role="alert">{{ error() }}</p>
+      @if (step() === 'email') {
+        <p>Te enviaremos un código para restablecer tu contraseña.</p>
+        <form [formGroup]="emailForm" (ngSubmit)="requestCode()" class="stack">
+          <ion-input label="Correo electrónico" labelPlacement="stacked" fill="outline" type="email" autocomplete="email" formControlName="email" />
+          <ion-button type="submit" class="primary" [disabled]="busy()">Enviar código</ion-button>
+        </form>
+      }
+      @if (step() === 'code') {
+        <h2>Confirma tu correo electrónico</h2><p>{{ emailForm.getRawValue().email }}</p>
+        <form [formGroup]="codeForm" (ngSubmit)="verify()" class="stack">
+          <ion-input label="Código de verificación" labelPlacement="stacked" fill="outline" inputmode="numeric" maxlength="6" autocomplete="one-time-code" formControlName="code" />
+          <ion-button type="submit" class="primary" [disabled]="busy()">Verificar código</ion-button>
+          <ion-button fill="clear" (click)="requestCode()" [disabled]="busy()">Reenviar código</ion-button>
+        </form>
+      }
+      @if (step() === 'password') {
+        <form [formGroup]="passwordForm" (ngSubmit)="reset()" class="stack">
+          <ion-input label="Nueva contraseña" labelPlacement="stacked" fill="outline" [type]="showPassword ? 'text' : 'password'" autocomplete="new-password" formControlName="password" />
+          <ion-checkbox [checked]="showPassword" (ionChange)="showPassword = $event.detail.checked" labelPlacement="end">Mostrar nueva contraseña</ion-checkbox>
+          <ion-input label="Confirmar contraseña" labelPlacement="stacked" fill="outline" [type]="showConfirm ? 'text' : 'password'" autocomplete="new-password" formControlName="confirm" />
+          <ion-checkbox [checked]="showConfirm" (ionChange)="showConfirm = $event.detail.checked" labelPlacement="end">Mostrar confirmación</ion-checkbox>
+          <ion-button type="submit" class="primary" [disabled]="busy()">Cambiar contraseña</ion-button>
+        </form>
+      }
+      <ion-button fill="clear" routerLink="/login"><ion-icon name="arrow-back" slot="start" />Volver al login</ion-button>
+    </ion-card-content></ion-card>
+    <p class="muted">Si tienes problemas con la verificación, contacta con nuestro soporte.</p>
+  </main>
+</ion-content>

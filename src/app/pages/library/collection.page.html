@@ -1,0 +1,18 @@
+@if (loading()) { <p class="empty-state"><ion-spinner /> Cargando...</p> }
+<p class="error" role="alert">{{ error() }}</p>
+@if (collection(); as c) {
+  <section>
+    <div class="collection-header">
+      @if (c.type === 'likes') { <div class="liked-cover collection-cover">♥</div> } @else { <img class="collection-cover" [src]="api.asset(c.cover)" alt="Portada"> }
+      <div><p>{{ c.type === 'album' ? 'Álbum' : c.type === 'artist' ? 'Artista' : 'Playlist' }}</p><h1>{{ c.title }}</h1><span>{{ c.subtitle }}{{ c.subtitle ? ' · ' : '' }}{{ visibleSongs().length }} canciones</span></div>
+    </div>
+    <div class="collection-actions">
+      <ion-button class="round-play large-play" [disabled]="!visibleSongs().length" (click)="play()" aria-label="Reproducir o pausar colección"><ion-icon slot="icon-only" [name]="playingCollection() ? 'pause' : 'play'" /></ion-button>
+      <ion-button fill="clear" (click)="player.shuffle(visibleSongs())" [disabled]="!visibleSongs().length" aria-label="Reproducción aleatoria"><ion-icon name="shuffle" slot="icon-only" /></ion-button>
+      @if (c.album && !session.guest()) { <ion-button fill="outline" (click)="library.toggleAlbum(c.album)" [disabled]="library.busyIds().includes('album:' + c.album.album_id)">{{ savedAlbum() ? 'Guardado ✓' : '+ Guardar álbum' }}</ion-button> }
+      @if (c.playlist) { <ion-button fill="clear" (click)="library.playlistOptions(c.playlist)" aria-label="Opciones de playlist"><ion-icon name="ellipsis-horizontal" slot="icon-only" /></ion-button> }
+    </div>
+    @if (c.albums.length) { <h2>Álbumes</h2><div class="catalog-grid">@for (album of c.albums; track album.album_id) { <ion-card button class="catalog-card" [routerLink]="['/home/album', album.album_id]"><img [src]="api.asset(album.album_portada_ruta)" alt="" loading="lazy"><ion-card-content>{{ album.album_nombre }}</ion-card-content></ion-card> }</div> }
+    <app-song-list [songs]="visibleSongs()" [removable]="!!c.playlist" (remove)="remove($event)" emptyMessage="Esta colección todavía no tiene canciones." />
+  </section>
+}

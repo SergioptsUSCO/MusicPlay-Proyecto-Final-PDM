@@ -1,0 +1,60 @@
+<ion-header class="ion-no-border"><ion-toolbar class="music-toolbar">
+  <ion-buttons slot="start">
+    <ion-menu-button menu="library" aria-label="Abrir biblioteca" />
+    <a class="brand" routerLink="/home"><img src="assets/logo.svg" alt="MusicPlay"></a>
+    <ion-button fill="solid" class="search-button" routerLink="/home/buscar" aria-label="Buscar"><ion-icon name="search-outline" slot="start" /><span>Buscar</span></ion-button>
+    <ion-button routerLink="/home" aria-label="Inicio"><ion-icon name="home-outline" slot="icon-only" /></ion-button>
+  </ion-buttons>
+  <ion-buttons slot="end">
+    @if (session.user()?.usuario_rol === 1) { <ion-button fill="solid" class="white-button admin-link" routerLink="/admin">Admin</ion-button> }
+    <ion-button fill="solid" class="white-button logout-button" (click)="logout()">{{ session.guest() ? 'Iniciar sesión' : 'Cerrar sesión' }}</ion-button>
+    <span class="profile-circle" [attr.title]="session.user()?.usuario_nombre || 'Invitado'">{{ (session.user()?.usuario_nombre || 'Invitado').charAt(0).toUpperCase() }}</span>
+  </ion-buttons>
+</ion-toolbar></ion-header>
+<ion-split-pane contentId="music-main" when="lg" class="music-split">
+  <ion-menu menuId="library" contentId="music-main" type="overlay" class="library-menu">
+    <ion-header class="ion-no-border"><ion-toolbar>
+      <ion-title>Tu biblioteca</ion-title>
+      @if (!session.guest()) { <ion-buttons slot="end"><ion-button routerLink="/home/playlist/nueva" aria-label="Crear playlist">+ Crear</ion-button></ion-buttons> }
+    </ion-toolbar></ion-header>
+    <ion-content>
+      @if (session.guest()) {
+        <ion-card><ion-card-content><h3>Tu música, a tu manera</h3><p>Inicia sesión para guardar tus álbumes y crear playlists.</p><ion-button class="primary" (click)="logout()">Iniciar sesión</ion-button></ion-card-content></ion-card>
+      } @else {
+        <ion-list lines="none" class="library-list">
+          <ion-item button routerLink="/home/favoritos"><div slot="start" class="liked-cover small-cover">♥</div><ion-label><h3>Canciones que te gustan</h3><p>{{ library.likes().length }} canciones</p></ion-label></ion-item>
+          @for (playlist of library.playlists(); track playlist.playlist_id) {
+            <div class="library-playlist-row">
+              <ion-item button [routerLink]="['/home/playlist', playlist.playlist_id]"><ion-thumbnail slot="start"><img [src]="api.asset(playlist.playlist_portada_ruta)" alt=""></ion-thumbnail><ion-label><h3>{{ playlist.playlist_nombre }}</h3><p>Playlist</p></ion-label></ion-item>
+              <ion-button fill="clear" (click)="library.playlistOptions(playlist)" [attr.aria-label]="'Opciones de ' + playlist.playlist_nombre"><ion-icon slot="icon-only" name="ellipsis-horizontal" /></ion-button>
+            </div>
+          }
+          @for (album of library.albums(); track album.album_id) {
+            <ion-item button [routerLink]="['/home/album', album.album_id]"><ion-thumbnail slot="start"><img [src]="api.asset(album.album_portada_ruta)" alt=""></ion-thumbnail><ion-label><h3>{{ album.album_nombre }}</h3><p>Álbum</p></ion-label></ion-item>
+          } @empty { <p class="library-hint">Guarda tus álbumes favoritos con el botón + de cada álbum.</p> }
+        </ion-list>
+      }
+    </ion-content>
+  </ion-menu>
+  <div id="music-main" class="ion-page music-main"><ion-content class="music-content"><div class="music-view"><router-outlet /></div></ion-content></div>
+</ion-split-pane>
+<ion-footer class="ion-no-border player-footer">
+  @if (player.error()) { <p class="player-error" role="alert">{{ player.error() }}</p> }
+  <div class="player-bar">
+    <div class="song-info" [class.empty]="!player.current()">
+      <img [src]="api.asset(player.current()?.song_portada_ruta)" alt="">
+      <div><strong>{{ player.current()?.song_nombre || 'Selecciona una canción' }}</strong><small>{{ catalog.artistName(player.current()?.song_artista) }}</small></div>
+    </div>
+    <div class="player-controls">
+      <div class="playback-buttons">
+        <ion-button fill="clear" (click)="player.adjacent(-1)" aria-label="Canción anterior"><ion-icon name="play-skip-back" slot="icon-only" /></ion-button>
+        <ion-button class="round-play" (click)="player.toggle()" [attr.aria-label]="player.playing() ? 'Pausar' : 'Reproducir'"><ion-icon [name]="player.playing() ? 'pause' : 'play'" slot="icon-only" /></ion-button>
+        <ion-button fill="clear" (click)="player.adjacent(1)" aria-label="Siguiente canción"><ion-icon name="play-skip-forward" slot="icon-only" /></ion-button>
+        <ion-button fill="clear" [disabled]="!player.current()" [routerLink]="['/home/cancion', player.current()?.song_id || 0]" aria-label="Ver canción"><ion-icon name="open-outline" slot="icon-only" /></ion-button>
+      </div>
+      <!-- ionChange solo responde al usuario; ionInput también se emite al actualizar value desde timeupdate. -->
+      <div class="player-progress"><span>{{ time(player.elapsed()) }}</span><ion-range aria-label="Progreso de reproducción" [min]="0" [max]="100" [value]="player.duration() ? player.elapsed() / player.duration() * 100 : 0" (ionChange)="player.seek(+$event.detail.value)" [disabled]="!player.duration()" /><span>{{ time(player.duration()) }}</span></div>
+    </div>
+    <div class="volume-control"><ion-icon name="volume-high-outline" /><ion-range aria-label="Volumen" [min]="0" [max]="1" [step]="0.01" [value]="player.volume()" (ionInput)="player.setVolume(+$event.detail.value)" /></div>
+  </div>
+</ion-footer>

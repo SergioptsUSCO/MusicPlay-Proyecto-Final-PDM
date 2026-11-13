@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MusicPlay</string>
+    <string name="title_activity_main">MusicPlay</string>
+    <string name="package_name">com.musicplay.app</string>
+    <string name="custom_url_scheme">com.musicplay.app</string>
+</resources>

@@ -1,0 +1,18 @@
+<ion-header class="ion-no-border"><ion-toolbar class="public-toolbar">
+  <a class="brand" routerLink="/home" slot="start"><img src="assets/logo.svg" alt="">MusicPlay</a>
+  <ion-buttons slot="end"><ion-button (click)="session.logout()">Cerrar sesión</ion-button></ion-buttons>
+</ion-toolbar></ion-header>
+<ion-content><main class="page-container preferences-page">
+  <p class="eyebrow">Primer paso</p><h1>Elige tu artista preferido</h1>
+  <p class="intro">Usaremos esta señal junto con tu historial de reproducción para recomendar canciones con mejor puntería.</p>
+  @if (loading()) { <ion-spinner aria-label="Cargando artistas" /> }
+  <div class="artist-picker">
+    @for (artist of artists(); track artist.artista_id) {
+      <ion-card class="artist-option" [class.selected]="selected === artist.artista_id" button (click)="selected = artist.artista_id" [attr.aria-pressed]="selected === artist.artista_id">
+        <img [src]="api.asset(artist.artista_foto_ruta)" [alt]="artist.artista_nombre"><ion-card-content>{{ artist.artista_nombre }}</ion-card-content>
+      </ion-card>
+    } @empty { @if (!loading()) { <p>No hay artistas registrados.</p> } }
+  </div>
+  <p class="error" role="alert">{{ error() }}</p>
+  <ion-button class="primary continue-button" [disabled]="!selected || busy()" (click)="save()">Continuar</ion-button>
+</main></ion-content>

@@ -1,0 +1,43 @@
+{
+  "name": "musicplay",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "start": "ng serve --host 0.0.0.0",
+    "build": "ng build",
+    "build:android": "ng build --configuration android",
+    "android:add": "npm run build:android && cap add android",
+    "android:sync": "npm run build:android && cap sync android",
+    "android:open": "cap open android",
+    "android:run": "npm run android:sync && cap run android",
+    "test:e2e": "playwright test"
+  },
+  "engines": {
+    "node": "^22.22.3 || ^24.15.0 || ^26.0.0"
+  },
+  "dependencies": {
+    "@angular/common": "~22.2.6",
+    "@angular/compiler": "~22.2.6",
+    "@angular/core": "~22.2.6",
+    "@angular/forms": "~22.2.6",
+    "@angular/platform-browser": "~22.2.6",
+    "@angular/router": "~22.2.6",
+    "@capacitor/android": "~8.6.2",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/browser": "^8.0.0",
+    "@capacitor/core": "~8.6.2",
+    "@ionic/angular": "~9.0.11",
+    "ionicons": "^8.0.13",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/build": "~22.2.6",
+    "@angular/cli": "~22.2.6",
+    "@angular/compiler-cli": "~22.2.6",
+    "@capacitor/cli": "~8.6.2",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^22.0.0",
+    "typescript": "~6.0.0"
+  }
+}
